@@ -3,7 +3,8 @@
 # SOF-ELK Docker - Full Setup Script
 # Run once: sudo bash setup.sh
 #
-# Tested on: WSL2 (Ubuntu) + Docker Desktop for Windows
+# Tested on: WSL2 (Ubuntu/Kali) + Docker Desktop for Windows
+# Also works: Linux (native Docker), macOS + Docker Desktop
 # ELK:       8.17.0
 # SOF-ELK:   philhagen/sof-elk public/v20241217
 # =============================================================================
@@ -28,6 +29,15 @@ fi
 
 REAL_USER="${SUDO_USER:-$USER}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ── Detect OS ─────────────────────────────────────────────────────────────────
+OS="$(uname -s)"
+# BSD sed (macOS) needs sed -i '', GNU sed (Linux) needs sed -i
+if [[ "$OS" == "Darwin" ]]; then
+  SED_INPLACE=(-i '')
+else
+  SED_INPLACE=(-i)
+fi
 
 echo -e "\n${BOLD}╔══════════════════════════════════════════════╗"
 echo -e "║        SOF-ELK Docker Setup Script           ║"
@@ -64,20 +74,28 @@ else
   exit 1
 fi
 
-# ── Step 2: WSL2 kernel parameter ─────────────────────────────────────────────
-step "Step 2: Configuring WSL2 kernel parameters"
+# ── Step 2: Kernel parameter (vm.max_map_count) ───────────────────────────────
+step "Step 2: Configuring vm.max_map_count (required by Elasticsearch)"
 
-CURRENT_MAP=$(sysctl -n vm.max_map_count 2>/dev/null || echo "0")
-if [[ "$CURRENT_MAP" -lt 262144 ]]; then
-  sysctl -w vm.max_map_count=262144
-  if grep -q "vm.max_map_count" /etc/sysctl.conf 2>/dev/null; then
-    sed -i 's/^vm.max_map_count.*/vm.max_map_count=262144/' /etc/sysctl.conf
-  else
-    echo "vm.max_map_count=262144" >> /etc/sysctl.conf
-  fi
-  success "vm.max_map_count set to 262144 and persisted"
+if [[ "$OS" == "Darwin" ]]; then
+  # On macOS, Docker runs in a Linux VM — set the param inside that VM
+  info "macOS detected: setting vm.max_map_count inside Docker VM..."
+  docker run --rm --privileged alpine sysctl -w vm.max_map_count=262144
+  success "vm.max_map_count=262144 set inside Docker VM"
+  warn "Note: this resets on Docker Desktop restart. To persist, add it in Docker Desktop → Settings → General → 'vm.max_map_count=262144' under resource settings."
 else
-  success "vm.max_map_count already $CURRENT_MAP (>= 262144)"
+  CURRENT_MAP=$(sysctl -n vm.max_map_count 2>/dev/null || echo "0")
+  if [[ "$CURRENT_MAP" -lt 262144 ]]; then
+    sysctl -w vm.max_map_count=262144
+    if grep -q "vm.max_map_count" /etc/sysctl.conf 2>/dev/null; then
+      sed "${SED_INPLACE[@]}" 's/^vm.max_map_count.*/vm.max_map_count=262144/' /etc/sysctl.conf
+    else
+      echo "vm.max_map_count=262144" >> /etc/sysctl.conf
+    fi
+    success "vm.max_map_count set to 262144 and persisted"
+  else
+    success "vm.max_map_count already $CURRENT_MAP (>= 262144)"
+  fi
 fi
 
 # ── Step 3: Generate encryption keys and write .env ───────────────────────────
@@ -96,9 +114,9 @@ KIBANA_ENCKEY3=${KEY3}
 EOF
 
 # Also patch kibana.yml placeholders so the file itself is valid
-sed -i "s|PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_1|${KEY1}|g" kibana/kibana.yml
-sed -i "s|PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_2|${KEY2}|g" kibana/kibana.yml
-sed -i "s|PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_3|${KEY3}|g" kibana/kibana.yml
+sed "${SED_INPLACE[@]}" "s|PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_1|${KEY1}|g" kibana/kibana.yml
+sed "${SED_INPLACE[@]}" "s|PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_2|${KEY2}|g" kibana/kibana.yml
+sed "${SED_INPLACE[@]}" "s|PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_3|${KEY3}|g" kibana/kibana.yml
 
 success "Encryption keys generated (32 chars each)"
 
