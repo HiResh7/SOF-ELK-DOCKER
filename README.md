@@ -181,9 +181,3 @@ sof-elk-docker/
 
 - [philhagen/sof-elk](https://github.com/philhagen/sof-elk) — the original SOF-ELK project by Phil Hagen (SANS)
 - [Elastic](https://www.elastic.co/) — Elasticsearch, Logstash, Kibana, Filebeat
-
----
-
-## License
-
-MIT
