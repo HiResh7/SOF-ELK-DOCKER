@@ -3,7 +3,6 @@
 [![ELK Version](https://img.shields.io/badge/ELK-8.17.0-005571?logo=elasticstack&logoColor=white)](https://www.elastic.co/)
 [![SOF-ELK](https://img.shields.io/badge/SOF--ELK-public%2Fv20241217-blue)](https://github.com/philhagen/sof-elk)
 [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-0db7ed?logo=docker&logoColor=white)](https://docs.docker.com/get-docker/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 > **One-command DFIR log analysis stack.** Drop evidence files in. Open Kibana. Hunt.
 
