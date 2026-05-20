@@ -50,11 +50,16 @@ This repo wraps all of that in a Docker Compose stack so you can spin it up in m
 
 | Requirement | Notes |
 |---|---|
-| Windows 10/11 | WSL2 enabled |
-| [Docker Desktop](https://www.docker.com/products/docker-desktop/) | WSL2 backend enabled in Settings → Resources → WSL Integration |
-| WSL2 distro | Ubuntu 22.04+ or Kali recommended |
-| RAM | 8 GB minimum, 16 GB recommended |
+| [Docker](https://docs.docker.com/get-docker/) + [Docker Compose v2](https://docs.docker.com/compose/) | Docker Desktop (Windows/Mac) or Docker Engine (Linux) |
+| RAM | 6 GB usable minimum, 8 GB+ recommended |
 | Disk | 20 GB free for images + data |
+
+**OS support:**
+- **Windows** — WSL2 + Docker Desktop (tested). Enable WSL Integration in Docker Desktop → Settings → Resources → WSL Integration.
+- **Linux** — works natively. `setup.sh` handles `vm.max_map_count` automatically.
+- **Mac** — should work with Docker Desktop; `setup.sh` skips the Linux kernel step gracefully.
+
+> WSL2 is not required — it's just the tested environment. The stack is pure Docker.
 
 ---
 
