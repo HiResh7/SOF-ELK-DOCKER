@@ -2,7 +2,7 @@
 
 [![ELK Version](https://img.shields.io/badge/ELK-8.17.0-005571?logo=elasticstack&logoColor=white)](https://www.elastic.co/)
 [![SOF-ELK](https://img.shields.io/badge/SOF--ELK-public%2Fv20241217-blue)](https://github.com/philhagen/sof-elk)
-[![Platform](https://img.shields.io/badge/platform-WSL2%20%2B%20Docker%20Desktop-0db7ed?logo=docker&logoColor=white)](https://docs.docker.com/desktop/wsl/)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-0db7ed?logo=docker&logoColor=white)](https://docs.docker.com/get-docker/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 > **One-command DFIR log analysis stack.** Drop evidence files in. Open Kibana. Hunt.
@@ -20,7 +20,7 @@ SOF-ELK is a pre-built ELK configuration maintained by [Phil Hagen](https://gith
 - **Kibana dashboards** purpose-built for threat hunting and log analysis
 - **Elasticsearch index templates** tuned for security data
 
-This repo wraps all of that in a Docker Compose stack so you can spin it up in minutes on any Windows machine with WSL2 and Docker Desktop — no VM, no manual ELK install.
+This repo wraps all of that in a Docker Compose stack so you can spin it up in minutes on Windows, macOS, or Linux — no VM, no manual ELK install.
 
 ---
 
@@ -33,11 +33,9 @@ This repo wraps all of that in a Docker Compose stack so you can spin it up in m
 | Disk | 20 GB free for images + data |
 
 **OS support:**
-- **Windows** — WSL2 + Docker Desktop (tested). Enable WSL Integration in Docker Desktop → Settings → Resources → WSL Integration.
-- **Linux** — works natively. `setup.sh` handles `vm.max_map_count` automatically.
-- **Mac** — should work with Docker Desktop; `setup.sh` skips the Linux kernel step gracefully.
-
-> WSL2 is not required — it's just the tested environment. The stack is pure Docker.
+- **Windows** — WSL2 + Docker Desktop. Enable WSL Integration in Docker Desktop → Settings → Resources → WSL Integration.
+- **macOS** — Docker Desktop for Mac. `setup.sh` automatically sets `vm.max_map_count` inside the Docker VM.
+- **Linux** — Docker Engine + Docker Compose. `setup.sh` sets `vm.max_map_count` on the host.
 
 ---
 
