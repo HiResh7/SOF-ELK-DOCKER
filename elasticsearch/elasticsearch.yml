@@ -1,0 +1,20 @@
+---
+# Elasticsearch configuration for SOF-ELK Docker
+# IMPORTANT: Do NOT add index.number_of_shards or index.number_of_replicas here
+# Those are index-level settings and will crash ES 8.x if placed in this file.
+# They are set via the SOF-ELK index templates instead.
+
+cluster.name: "sof-elk"
+node.name: "sof-elk-node-1"
+discovery.type: single-node
+
+# Disable security - local forensic lab use only
+xpack.security.enabled: false
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# Allow memory locking
+bootstrap.memory_lock: true
+
+# Listen on all interfaces inside the container
+network.host: 0.0.0.0

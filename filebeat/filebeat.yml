@@ -1,0 +1,87 @@
+---
+# Filebeat configuration for SOF-ELK Docker
+# Watches /logstash/<type>/ directories and ships to Logstash for parsing
+
+filebeat.inputs:
+
+  - type: filestream
+    id: syslog-input
+    enabled: true
+    paths: ["/logstash/syslog/*"]
+    tags: ["syslog"]
+
+  - type: filestream
+    id: httpdlog-input
+    enabled: true
+    paths: ["/logstash/httpdlog/*"]
+    tags: ["httpdlog"]
+
+  - type: filestream
+    id: zeek-input
+    enabled: true
+    paths: ["/logstash/zeek/*"]
+    tags: ["zeek"]
+
+  - type: filestream
+    id: netflow-input
+    enabled: true
+    paths: ["/logstash/netflow/*"]
+    tags: ["netflow-archive"]
+
+  - type: filestream
+    id: passivedns-input
+    enabled: true
+    paths: ["/logstash/passivedns/*"]
+    tags: ["passivedns"]
+
+  - type: filestream
+    id: kape-input
+    enabled: true
+    paths: ["/logstash/kape/*"]
+    tags: ["kape"]
+
+  - type: filestream
+    id: plaso-input
+    enabled: true
+    paths: ["/logstash/plaso/*"]
+    tags: ["plaso"]
+
+  - type: filestream
+    id: aws-input
+    enabled: true
+    paths: ["/logstash/aws/*"]
+    tags: ["aws"]
+
+  - type: filestream
+    id: azure-input
+    enabled: true
+    paths: ["/logstash/azure/*"]
+    tags: ["azure"]
+
+  - type: filestream
+    id: gcp-input
+    enabled: true
+    paths: ["/logstash/gcp/*"]
+    tags: ["gcp"]
+
+  - type: filestream
+    id: evtxlogs-input
+    enabled: true
+    paths: ["/logstash/evtxlogs/*"]
+    tags: ["evtxlogs"]
+
+  - type: filestream
+    id: json-input
+    enabled: true
+    paths: ["/logstash/json/*"]
+    tags: ["json"]
+
+# Ship to Logstash for parsing (not directly to ES)
+output.logstash:
+  hosts: ["logstash:5044"]
+  bulk_max_size: 1024
+
+path.data: /usr/share/filebeat/data
+
+logging.level: warning
+logging.to_files: false

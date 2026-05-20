@@ -1,0 +1,25 @@
+---
+# Kibana configuration for SOF-ELK Docker
+server.host: "0.0.0.0"
+server.name: "sof-elk-kibana"
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+
+# Disable the interactive setup wizard (requires enrollment token - not needed here)
+interactiveSetup.enabled: false
+
+# Disable telemetry
+telemetry.enabled: false
+telemetry.optIn: false
+
+# Logging
+logging.root.level: warn
+
+# Fleet - air-gapped mode (no internet connectivity required)
+xpack.fleet.isAirGapped: true
+
+# Encryption keys - REQUIRED by Kibana 8.x, minimum 32 characters each.
+# These are placeholders - setup.sh replaces them with random keys at deploy time.
+# Do NOT use these placeholder values in production.
+xpack.encryptedSavedObjects.encryptionKey: "PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_1"
+xpack.security.encryptionKey: "PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_2"
+xpack.reporting.encryptionKey: "PLACEHOLDER_REPLACED_BY_SETUP_SCRIPT_3"

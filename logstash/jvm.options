@@ -1,0 +1,10 @@
+## JVM configuration for SOF-ELK Docker
+-Xms1g
+-Xmx1g
+
+## Increase thread stack size as recommended by SOF-ELK
+-Xss4m
+
+## GC
+-XX:+UseG1GC
+-XX:+DisableExplicitGC

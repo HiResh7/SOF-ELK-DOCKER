@@ -1,0 +1,8 @@
+---
+# Logstash configuration for SOF-ELK Docker
+# NOTE: http.host is deprecated in 8.x in favor of api.http.host
+api.http.host: "0.0.0.0"
+xpack.monitoring.enabled: false
+
+# SOF-ELK configfiles are baked into the image at /usr/local/sof-elk/configfiles/
+path.config: /usr/local/sof-elk/configfiles/*.conf

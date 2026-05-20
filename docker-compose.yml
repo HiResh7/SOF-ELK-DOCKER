@@ -1,0 +1,130 @@
+---
+# SOF-ELK Docker Stack
+# ELK 8.17.0 + philhagen/sof-elk public/v20241217
+# Bridge network, no Swarm, no Traefik
+#
+# URLs:
+#   Kibana:        http://localhost:5601
+#   Elasticsearch: http://localhost:9200
+#   Logstash API:  http://localhost:9600
+#
+# Drop evidence files into ./logs/<type>/
+
+services:
+
+  # ── Elasticsearch ────────────────────────────────────────────────────────────
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.17.0
+    container_name: sof-elk-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - cluster.name=sof-elk
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+      - ./data/elasticsearch:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - sof-elk-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=5s || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 60s
+    restart: unless-stopped
+
+  # ── Logstash (custom image with SOF-ELK configs + plugins) ──────────────────
+  logstash:
+    build:
+      context: ./logstash
+      dockerfile: Dockerfile
+    image: sof-elk-logstash:8.17.0
+    container_name: sof-elk-logstash
+    environment:
+      - "LS_JAVA_OPTS=-Xms1g -Xmx1g -Xss4m"
+      - xpack.monitoring.enabled=false
+    volumes:
+      - ./logstash/logstash.yml:/usr/share/logstash/config/logstash.yml
+      - ./logstash/jvm.options:/usr/share/logstash/config/jvm.options
+      - ./logs:/logstash:ro
+    ports:
+      - "5044:5044"
+      - "5514:5514"
+      - "5514:5514/udp"
+      - "9600:9600"
+    networks:
+      - sof-elk-net
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:9600 || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 15
+      start_period: 120s
+    restart: unless-stopped
+
+  # ── Kibana ───────────────────────────────────────────────────────────────────
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.17.0
+    container_name: sof-elk-kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - XPACK_FLEET_ISAIRGAPPED=true
+      # Encryption keys are injected here by setup.sh at deploy time
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${KIBANA_ENCKEY1}
+      - XPACK_SECURITY_ENCRYPTIONKEY=${KIBANA_ENCKEY2}
+      - XPACK_REPORTING_ENCRYPTIONKEY=${KIBANA_ENCKEY3}
+    volumes:
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
+    ports:
+      - "5601:5601"
+    networks:
+      - sof-elk-net
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:5601/api/status || exit 1"]
+      interval: 20s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+    restart: unless-stopped
+
+  # ── Filebeat ─────────────────────────────────────────────────────────────────
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.17.0
+    container_name: sof-elk-filebeat
+    user: root
+    command: filebeat -e -strict.perms=false
+    volumes:
+      - ./filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./logs:/logstash:ro
+      - ./data/filebeat:/usr/share/filebeat/data
+    networks:
+      - sof-elk-net
+    depends_on:
+      logstash:
+        condition: service_healthy
+    restart: unless-stopped
+
+networks:
+  sof-elk-net:
+    driver: bridge
+    name: sof-elk-net
