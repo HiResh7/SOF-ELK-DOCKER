@@ -5,6 +5,30 @@
 [![Platform](https://img.shields.io/badge/platform-WSL2%20%2B%20Docker%20Desktop-0db7ed?logo=docker&logoColor=white)](https://docs.docker.com/desktop/wsl/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+> **One-command DFIR log analysis stack.** Drop evidence files in. Open Kibana. Hunt.
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        SOF-ELK DOCKER STACK                         │
+│                                                                     │
+│   Evidence Files          Ingest              Store        Visualize│
+│                                                                     │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────┐  ┌────────┐  │
+│  │  logs/zeek/  │    │              │    │          │  │        │  │
+│  │  logs/kape/  │───▶│   Filebeat   │───▶│Logstash  │  │Kibana  │  │
+│  │  logs/evtx/  │    │              │    │          │  │:5601   │  │
+│  │  logs/aws/   │    └──────────────┘    │ SOF-ELK  │  │        │  │
+│  │  logs/...    │                        │ Pipelines│  │Dashbds │  │
+│  └──────────────┘                        │          │  │Discover│  │
+│                                          └────┬─────┘  └───┬────┘  │
+│                                               │             │       │
+│                                          ┌────▼─────────────▼────┐  │
+│                                          │     Elasticsearch      │  │
+│                                          │        :9200           │  │
+│                                          └───────────────────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
 A fully automated Docker deployment of **[SOF-ELK](https://github.com/philhagen/sof-elk)** — the SANS DFIR ELK stack — running on ELK 8.17.0.  
 One command brings up Elasticsearch, Logstash (with all SOF-ELK pipelines and dashboards), Kibana, and Filebeat, ready to ingest forensic evidence.
 
